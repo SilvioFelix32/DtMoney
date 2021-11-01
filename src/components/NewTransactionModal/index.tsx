@@ -3,7 +3,8 @@ import incomeImg from '../../assets/income.svg';
 import outcomeImg from '../../assets/outcome.svg';
 import closeImg from '../../assets/close.svg';
 
-import { Container, TransactionTypeContainer } from './styles';
+import { Container, TransactionTypeContainer, RadioBox } from './styles';
+import { useState } from 'react';
 
 interface NewTransactionModalProps {
   isOpen: boolean;
@@ -11,6 +12,12 @@ interface NewTransactionModalProps {
 }
 
 export function NewTransactionModal({ isOpen, onRequestClose }: NewTransactionModalProps) {
+  const [type, setType] = useState('deposit');
+
+  function handleCreateNewTransaction() {
+    
+  }
+  
   return (
     <Modal
       isOpen={isOpen}
@@ -39,19 +46,28 @@ export function NewTransactionModal({ isOpen, onRequestClose }: NewTransactionMo
         </input>
 
         <TransactionTypeContainer>
-          <button 
-           type="button">
+          <RadioBox 
+           type="button"
+           /* className={type === 'deposit' ? 'active' : ''}  ESSA É UMA DAS MANEIRAS DE ESTILIZAR O BOTÃO*/
+           onClick={() => { setType('deposit'); }}
+           isActive={type === 'deposit'}
+           activeColor="green"
+           >
              <img src={incomeImg} alt="Entrada" >
              <span>Entrada</span>
              </img>
-          </button>
+          </RadioBox>
 
-          <button 
-           type="button">
-             <img src={outcomeImg} alt="Entrada" >
+          <RadioBox 
+           type="button"
+           onClick={() => { setType('withdraw'); }}
+           isActive={type === 'deposit'}
+           activeColor="red"
+           >
+             <img src={outcomeImg} alt="Saída" >
              <span>Saída</span>
              </img>
-          </button>
+          </RadioBox>
         </TransactionTypeContainer>
 
         <input
