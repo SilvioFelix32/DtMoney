@@ -16,23 +16,6 @@
   </sub>
 </div>
 
-# 📌 Contents
-
-* [Screenshots](#camera-screenshot) 
-* [Technologies](#rocket-technologies) 
-* [How to Run](#computer-how-to-run)
-* [Issues](#bug-issues)
-* [Contributing](#sparkles-issues)
-* [License](#page_facing_up-license)
-
-# :camera: Screenshots
-<div align="center">
-   <img src="./.github/screen1.png" width="400px">
-   <img src="./.github/screen2.png" width="400px">
-   <img src="./.github/screen3.png" width="400px">
-   <img src="./.github/screen4.png" width="400px">
-</div>
-
 ## Dependencies
 
 - [axios](https://ghub.io/axios): Promise based HTTP client for the browser and node.js
