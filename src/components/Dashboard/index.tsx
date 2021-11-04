@@ -1,12 +1,16 @@
-import { Summary } from "../Summary";
-import { TransactionTable } from "../TransactionsTable";
-import { Container } from "./styles";
+import { ITransaction } from '../../types'
+import { Summary } from '../Summary'
+import { TransactionsTable } from '../TransactionsTable'
+import { Container } from './styles'
+interface IDashboard {
+  handleEditTransaction: (data: ITransaction) => void
+}
 
-export function Dashboard() {
-    return (
-        <Container>
-            <Summary></Summary>
-            <TransactionTable></TransactionTable>
-        </Container>
-    );
+export const Dashboard = ({ handleEditTransaction }: IDashboard) => {
+  return (
+    <Container>
+      <Summary />
+      <TransactionsTable handleEditTransaction={handleEditTransaction} />
+    </Container>
+  )
 }

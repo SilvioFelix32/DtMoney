@@ -1,36 +1,108 @@
-import Modal from 'react-modal';
-import incomeImg from '../../assets/income.svg';
-import outcomeImg from '../../assets/outcome.svg';
-import closeImg from '../../assets/close.svg';
+import React, { FormEvent, useContext, useEffect, useState } from 'react'
+import Modal from 'react-modal'
 
-import { Container, TransactionTypeContainer, RadioBox } from './styles';
-import { FormEvent, useState } from 'react';
-import { api } from '../../services/api';
-import { type } from 'os';
+import closeSvg from '../../assets/close.svg'
+import incomeImg from '../../assets/income.svg'
+import outcomeImg from '../../assets/outcome.svg'
+import { TransactionContext } from '../../TransactionContext'
+import {
+  Container,
+  Input,
+  RadioBox,
+  SimpleButton,
+  SubmitButton,
+  TransactionTypeContainer
+} from './style'
+import { ITransaction, ITransactionInput } from '../../types'
 
 interface NewTransactionModalProps {
-  isOpen: boolean;
-  onRequestClose: () => void;
+  isOpen: boolean
+  isEdit?: boolean
+  onRequestClose: () => void
+  dataForEdition: ITransaction
 }
 
-export function NewTransactionModal({ isOpen, onRequestClose }: NewTransactionModalProps) {
-  const [title, setTitle] = useState('');
-  const [value, setValue] = useState(0);
-  const [category, setCategory] = useState('');
-  const [type, setType] = useState('deposit');
+export function NewTransactionModal({
+  isOpen,
+  isEdit,
+  onRequestClose,
+  dataForEdition
+}: NewTransactionModalProps) {
+  const [title, setTitle] = useState(dataForEdition?.title || '')
+  const [amount, setAmount] = useState(0)
+  const [type, setType] = useState('deposit')
+  const [category, setCategory] = useState('')
+  const [formIsValid, setFormIsValid] = useState(true)
 
-  function handleCreateNewTransaction(event: FormEvent) {
-    event.preventDefault
+  useEffect(() => {
+    if (dataForEdition) {
+      setTitle(dataForEdition.title)
+      setAmount(dataForEdition.amount)
+      setType(dataForEdition.type)
+      setCategory(dataForEdition.category)
+    } else {
+      setTitle('')
+      setAmount(0)
+      setType('deposit')
+      setCategory('')
+    }
+  }, [dataForEdition])
+
+  const { createTransaction, editTransaction } = useContext(TransactionContext)
+
+  const validateForm = (dataForm: ITransactionInput) => {
+    const values = Object.values(dataForm)
+    const hasInvalidInput = values.some((value: string | number) => {
+      return value === '' || value <= 0
+    })
+    const formIsValid = !hasInvalidInput
+    return formIsValid
   }
 
-  const data = {
-    title, 
-    value, 
-    category,
-    type,
-  };
+  const handleChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+    setState: React.Dispatch<React.SetStateAction<any>>
+  ) => {
+    const numberValue = Number(event.target.value)
+    if (!isNaN(numberValue) && numberValue > 0) {
+      setState(numberValue)
+      return
+    }
 
-  api.post('/transactions', data)
+    setState(event.target.value)
+    return
+  }
+
+  async function handleCreateNewTransaction(event: FormEvent) {
+    event.preventDefault()
+
+    const dataForm: ITransactionInput = {
+      title,
+      amount,
+      category,
+      type
+    }
+
+    const formIsValid = validateForm(dataForm)
+
+    if (formIsValid) {
+      setFormIsValid(true)
+
+      isEdit
+        ? await editTransaction({ ...dataForm, id: dataForEdition.id })
+        : await createTransaction(dataForm)
+
+      setTitle('')
+      setAmount(0)
+      setType('deposit')
+      setCategory('')
+
+      onRequestClose()
+      return
+    }
+
+    setFormIsValid(false)
+  }
 
   return (
     <Modal
@@ -39,68 +111,57 @@ export function NewTransactionModal({ isOpen, onRequestClose }: NewTransactionMo
       overlayClassName="react-modal-overlay"
       className="react-modal-content"
     >
-      <button
-        type="button"
-        onClick={onRequestClose}
-        className="react-modal-close"
-      >
-        <img src={closeImg} alt="Fechar Modal"></img>
-      </button>
-
+      <SimpleButton onClick={onRequestClose} className="react-modal-close">
+        <img src={closeSvg} alt="Fechar Modal" />
+      </SimpleButton>
       <Container onSubmit={handleCreateNewTransaction}>
-        <h2>Cadastrar Transação</h2>
-
-        <input
-          placeholder="Titulo"
+        <h2>Cadastrar transação</h2>
+        <Input
+          type="text"
           value={title}
-          onChange={event => setTitle(event.target.value)}
-        >
-        </input>
-
-        <input
+          placeholder="Titulo"
+          onChange={event => handleChange(event, setTitle)}
+        />
+        <Input
           type="number"
+          value={amount}
           placeholder="Valor"
-          value={value}
-          onChange={event => setValue(Number(event.target.value))}
-          >
-        </input>
-
+          onChange={event => handleChange(event, setAmount)}
+        />
         <TransactionTypeContainer>
           <RadioBox
             type="button"
-            /* className={type === 'deposit' ? 'active' : ''}  ESSA É UMA DAS MANEIRAS DE ESTILIZAR O BOTÃO*/
-            onClick={() => { setType('deposit'); }}
+            onClick={() => {
+              setType('deposit')
+            }}
             isActive={type === 'deposit'}
             activeColor="green"
           >
-            <img src={incomeImg} alt="Entrada" >
-              <span>Entrada</span>
-            </img>
+            <img src={incomeImg} alt="Entrada" />
+            <span>Entrada</span>
           </RadioBox>
 
           <RadioBox
             type="button"
-            onClick={() => { setType('withdraw'); }}
-            isActive={type === 'deposit'}
+            onClick={() => {
+              setType('withdraw')
+            }}
+            isActive={type === 'withdraw'}
             activeColor="red"
           >
-            <img src={outcomeImg} alt="Saída" >
-              <span>Saída</span>
-            </img>
+            <img src={outcomeImg} alt="Saída" />
+            <span>Saída</span>
           </RadioBox>
         </TransactionTypeContainer>
-
-        <input
+        <Input
+          type="text"
           placeholder="Categoria"
           value={category}
-          onChange={event => setCategory(event.target.value)}
-          >
-        </input>
-
-        <button type="submit">
-          Cadastrar
-        </button>
+          onChange={event => handleChange(event, setCategory)}
+        />
+        <SubmitButton type="submit">Cadastrar</SubmitButton>
+        {!formIsValid && <p>Preencha os campos em branco</p>}
       </Container>
     </Modal>
-  );
+  )
 }
